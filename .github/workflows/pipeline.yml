@@ -13,7 +13,7 @@ jobs:
       - name: Configure 1Password Connect
         uses: 1password/load-secrets-action/configure@v1 # 1password/load-secrets-action/configure@<version>
         with:
-          connect-host: http://localhost:8080
+          connect-host: http://localhost:8000
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
 
       - name: Load secret
