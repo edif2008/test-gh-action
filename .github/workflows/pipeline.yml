@@ -19,8 +19,6 @@ jobs:
       - name: Load secret
         uses: 1password/load-secrets-action@v1
         env:
-          OP_CONNECT_HOST: <Your Connect instance URL>
-          OP_CONNECT_TOKEN: ${{ secrets.OP_CONNECT_TOKEN }}
           SECRET: op://acceptance-tests/hello-world/secret
 
       - name: Print masked secret
