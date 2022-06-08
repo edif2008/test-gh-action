@@ -13,7 +13,7 @@ jobs:
       - name: Load secret
         uses: 1password/load-secrets-action@v1
         env:
-          SECRET: op://acceptance-tests/hello-world/test-section/secret
+          SECRET: op://acceptance-tests/hello-world/secret
 
       - name: Print masked secret
         run: |
