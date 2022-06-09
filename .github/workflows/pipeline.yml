@@ -7,13 +7,13 @@ jobs:
       - name: Configure 1Password Connect
         uses: 1password/load-secrets-action/configure@v1 # 1password/load-secrets-action/configure@<version>
         with:
-          connect-host: https://bd3b-95-128-95-70.eu.ngrok.io
+          connect-host: https://e395-2001-1c00-b1d-2b00-949e-8407-9039-ea22.eu.ngrok.io
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
 
       - name: Load secret
         uses: 1password/load-secrets-action@v1
         env:
-          SECRET: op://acceptance-tests/hello-world/secret
+          SECRET: op://acceptance-tests/hello-world/test-section/secret
 
       - name: Print masked secret
         run: |
