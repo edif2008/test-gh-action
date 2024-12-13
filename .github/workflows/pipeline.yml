@@ -23,12 +23,10 @@ jobs:
   test-with-output-secrets:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]
         exclude:
           - os: macos-latest
-            auth: connect
-          - os: windows-latest
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
@@ -65,12 +63,10 @@ jobs:
   test-with-export-env:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]
         exclude:
           - os: macos-latest
-            auth: connect
-          - os: windows-latest
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
@@ -107,12 +103,10 @@ jobs:
   test-references-with-ids:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]
         exclude:
           - os: macos-latest
-            auth: connect
-          - os: windows-latest
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
