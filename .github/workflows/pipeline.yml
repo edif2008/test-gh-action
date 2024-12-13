@@ -42,12 +42,12 @@ jobs:
           docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: bxb100/load-secrets-action-1/configure@abbc86073684ed5df32623538af9f859530f679d
+        uses: 1password/load-secrets-action/configure@v2
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: bxb100/load-secrets-action-1/configure@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action/configure@<version>
+        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
@@ -88,12 +88,12 @@ jobs:
           docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: bxb100/load-secrets-action-1/configure@abbc86073684ed5df32623538af9f859530f679d
+        uses: 1password/load-secrets-action/configure@v2
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: bxb100/load-secrets-action-1/configure@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action/configure@<version>
+        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
@@ -134,12 +134,12 @@ jobs:
           docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: bxb100/load-secrets-action-1/configure@abbc86073684ed5df32623538af9f859530f679d
+        uses: 1password/load-secrets-action/configure@v2
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: bxb100/load-secrets-action-1/configure@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action/configure@<version>
+        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
