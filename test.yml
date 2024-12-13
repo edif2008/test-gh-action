@@ -1,24 +1,16 @@
-on: push
+on: pull_request_review
+name: Run acceptance tests
+
 jobs:
-  # hello-world:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Configure 1Password Connect
-  #       uses: 1password/load-secrets-action/configure@v1 # 1password/load-secrets-action/configure@<version>
-  #       with:
-  #         connect-host: https://e395-2001-1c00-b1d-2b00-949e-8407-9039-ea22.eu.ngrok.io
-  #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-
-  #     - name: Load secret
-  #       uses: bxb100/load-secrets-action@abbc860
-  #       env:
-  #         SECRET: op://acceptance-tests/hello-world/test-section/secret
-
-  #     - name: Print masked secret
-  #       run: |
-  #         echo "Secret: $SECRET"
-  #       # Prints: Secret: ***
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
 
   test-with-output-secrets:
     strategy:
@@ -32,28 +24,28 @@ jobs:
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Launch 1Password Connect instance
         if: ${{ matrix.auth == 'connect' }}
         env:
           OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
         run: |
           echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+          docker-compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: 1password/load-secrets-action/configure@v2
+        uses: ./configure
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
+        uses: ./configure # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
       - name: Load secrets
         id: load_secrets
-        uses: bxb100/load-secrets-action-1@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
+        uses: ./ # 1password/load-secrets-action@<version>
         with:
           export-env: false
         env:
@@ -78,28 +70,28 @@ jobs:
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Launch 1Password Connect instance
         if: ${{ matrix.auth == 'connect' }}
         env:
           OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
         run: |
           echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+          docker-compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: 1password/load-secrets-action/configure@v2
+        uses: ./configure
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
+        uses: ./configure # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
       - name: Load secrets
         id: load_secrets
-        uses: bxb100/load-secrets-action-1@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
+        uses: ./ # 1password/load-secrets-action@<version>
         env:
           SECRET: op://acceptance-tests/test-secret/password
           SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
@@ -107,7 +99,7 @@ jobs:
       - name: Assert test secret values
         run: ./tests/assert-env-set.sh
       - name: Remove secrets
-        uses: bxb100/load-secrets-action-1@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
+        uses: ./ # 1password/load-secrets-action@<version>
         with:
           unset-previous: true
       - name: Assert removed secrets
@@ -124,28 +116,28 @@ jobs:
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Launch 1Password Connect instance
         if: ${{ matrix.auth == 'connect' }}
         env:
           OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
         run: |
           echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+          docker-compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: 1password/load-secrets-action/configure@v2
+        uses: ./configure
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
+        uses: ./configure # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
       - name: Load secrets
         id: load_secrets
-        uses: bxb100/load-secrets-action-1@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
+        uses: ./ # 1password/load-secrets-action@<version>
         with:
           export-env: false
         env:
