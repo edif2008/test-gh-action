@@ -98,6 +98,8 @@ jobs:
         uses: bxb100/load-secrets-action-1@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
         with:
           unset-previous: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Assert removed secrets
         run: ./tests/assert-env-unset.sh
   test-references-with-ids:
