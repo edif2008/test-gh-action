@@ -149,9 +149,9 @@ jobs:
         with:
           export-env: false
         env:
-          SECRET: op://acceptance-tests/test-secret/password
-          SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
-          MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
+          SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
+          SECRET_IN_SECTION: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
+          MULTILINE_SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
       - name: Assert test secret values
         env:
           SECRET: ${{ steps.load_secrets.outputs.SECRET }}
