@@ -42,18 +42,18 @@ jobs:
           docker-compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: bxb100/load-secrets-action/configure@abbc860
+        uses: bxb100/load-secrets-action/configure@abbc86073684ed5df32623538af9f859530f679d
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: bxb100/load-secrets-action/configure@abbc860 # 1password/load-secrets-action/configure@<version>
+        uses: bxb100/load-secrets-action/configure@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
       - name: Load secrets
         id: load_secrets
-        uses: bxb100/load-secrets-action@abbc860 # 1password/load-secrets-action@<version>
+        uses: bxb100/load-secrets-action@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
         with:
           export-env: false
         env:
@@ -88,18 +88,18 @@ jobs:
           docker-compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: bxb100/load-secrets-action/configure@abbc860
+        uses: bxb100/load-secrets-action/configure@abbc86073684ed5df32623538af9f859530f679d
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: bxb100/load-secrets-action/configure@abbc860 # 1password/load-secrets-action/configure@<version>
+        uses: bxb100/load-secrets-action/configure@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
       - name: Load secrets
         id: load_secrets
-        uses: bxb100/load-secrets-action@abbc860 # 1password/load-secrets-action@<version>
+        uses: bxb100/load-secrets-action@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
         env:
           SECRET: op://acceptance-tests/test-secret/password
           SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
@@ -107,7 +107,7 @@ jobs:
       - name: Assert test secret values
         run: ./tests/assert-env-set.sh
       - name: Remove secrets
-        uses: bxb100/load-secrets-action@abbc860 # 1password/load-secrets-action@<version>
+        uses: bxb100/load-secrets-action@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
         with:
           unset-previous: true
       - name: Assert removed secrets
@@ -134,18 +134,18 @@ jobs:
           docker-compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
       - name: Configure Service account
         if: ${{ matrix.auth == 'service-account' }}
-        uses: bxb100/load-secrets-action/configure@abbc860
+        uses: bxb100/load-secrets-action/configure@abbc86073684ed5df32623538af9f859530f679d
         with:
           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       - name: Configure 1Password Connect
         if: ${{ matrix.auth == 'connect' }}
-        uses: bxb100/load-secrets-action/configure@abbc860 # 1password/load-secrets-action/configure@<version>
+        uses: bxb100/load-secrets-action/configure@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action/configure@<version>
         with:
           connect-host: http://localhost:8080
           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
       - name: Load secrets
         id: load_secrets
-        uses: bxb100/load-secrets-action@abbc860 # 1password/load-secrets-action@<version>
+        uses: bxb100/load-secrets-action@abbc86073684ed5df32623538af9f859530f679d # 1password/load-secrets-action@<version>
         with:
           export-env: false
         env:
