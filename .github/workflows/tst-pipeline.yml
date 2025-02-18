@@ -45,7 +45,7 @@ jobs:
         with:
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
         if: |
-          github.event_name == 'pull_request_target' &&
+          github.event_name == 'repository_dispatch' &&
           github.event.client_payload.slash_command.args.named.sha != '' &&
           contains(
             github.event.client_payload.pull_request.head.sha,
@@ -84,17 +84,44 @@ jobs:
           SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
           MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
         run: ./tests/assert-env-set.sh
+      # Update check run called "integration-fork" on the forked PR
+      - uses: actions/github-script@v6
+        id: update-check-run
+        if: ${{ always() }}
+        env:
+          job: ${{ github.job }}
+          ref: ${{ github.event.client_payload.pull_request.head.sha }}
+          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+          conclusion: ${{ job.status }} 
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: checks } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref: process.env.ref
+            });
+
+            const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+            const { data: result } = await github.rest.checks.update({
+              ...context.repo,
+              check_run_id: check[0].id,
+              status: 'completed',
+              conclusion: process.env.conclusion
+            });
+
+            return result;
   test-with-export-env:
-    # if: |
-    #   (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-    #   (
-    #     github.event_name == 'repository_dispatch' &&
-    #     github.event.client_payload.slash_command.args.named.sha != '' &&
-    #     contains(
-    #       github.event.client_payload.pull_request.head.sha,
-    #       github.event.client_payload.slash_command.args.named.sha
-    #     )
-    #   )
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (
+        github.event_name == 'repository_dispatch' &&
+        github.event.client_payload.slash_command.args.named.sha != '' &&
+        contains(
+          github.event.client_payload.pull_request.head.sha,
+          github.event.client_payload.slash_command.args.named.sha
+        )
+      )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -151,17 +178,44 @@ jobs:
           unset-previous: true
       - name: Assert removed secrets
         run: ./tests/assert-env-unset.sh
+      # Update check run called "integration-fork" on the forked PR
+      - uses: actions/github-script@v6
+        id: update-check-run
+        if: ${{ always() }}
+        env:
+          job: ${{ github.job }}
+          ref: ${{ github.event.client_payload.pull_request.head.sha }}
+          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+          conclusion: ${{ job.status }} 
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: checks } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref: process.env.ref
+            });
+
+            const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+            const { data: result } = await github.rest.checks.update({
+              ...context.repo,
+              check_run_id: check[0].id,
+              status: 'completed',
+              conclusion: process.env.conclusion
+            });
+
+            return result;
   test-references-with-ids:
-    # if: |
-    #   (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-    #   (
-    #     github.event_name == 'repository_dispatch' &&
-    #     github.event.client_payload.slash_command.args.named.sha != '' &&
-    #     contains(
-    #       github.event.client_payload.pull_request.head.sha,
-    #       github.event.client_payload.slash_command.args.named.sha
-    #     )
-    #   )
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (
+        github.event_name == 'repository_dispatch' &&
+        github.event.client_payload.slash_command.args.named.sha != '' &&
+        contains(
+          github.event.client_payload.pull_request.head.sha,
+          github.event.client_payload.slash_command.args.named.sha
+        )
+      )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -218,6 +272,33 @@ jobs:
           SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
           MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
         run: ./tests/assert-env-set.sh
+      # Update check run called "integration-fork" on the forked PR
+      - uses: actions/github-script@v6
+        id: update-check-run
+        if: ${{ always() }}
+        env:
+          job: ${{ github.job }}
+          ref: ${{ github.event.client_payload.pull_request.head.sha }}
+          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+          conclusion: ${{ job.status }} 
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: checks } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref: process.env.ref
+            });
+
+            const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+            const { data: result } = await github.rest.checks.update({
+              ...context.repo,
+              check_run_id: check[0].id,
+              status: 'completed',
+              conclusion: process.env.conclusion
+            });
+
+            return result;
 
   # test-with-output-secrets-fork:
   #   # required permissions for updating the status of the pull request checks
