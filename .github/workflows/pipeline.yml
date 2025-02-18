@@ -1,5 +1,4 @@
 on:
-  pull_request_review:
   push:
     branches: ["main"]
 name: Run acceptance tests - rewritten action
