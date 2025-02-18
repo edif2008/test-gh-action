@@ -1,159 +1,159 @@
-# on:
-#   pull_request:
-#   push:
-#     branches: ["main"]
-# name: Run acceptance tests - rewritten action
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+name: Run acceptance tests - rewritten action
 
-# jobs:
-#   # hello-world:
-#   #   runs-on: ubuntu-latest
-#   #   steps:
-#   #     - uses: actions/checkout@v4
-#   #     - name: Configure 1Password Connect
-#   #       uses: 1password/load-secrets-action/configure@v1 # 1password/load-secrets-action/configure@<version>
-#   #       with:
-#   #         connect-host: https://e395-2001-1c00-b1d-2b00-949e-8407-9039-ea22.eu.ngrok.io
-#   #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+jobs:
+  # hello-world:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Configure 1Password Connect
+  #       uses: 1password/load-secrets-action/configure@v1 # 1password/load-secrets-action/configure@<version>
+  #       with:
+  #         connect-host: https://e395-2001-1c00-b1d-2b00-949e-8407-9039-ea22.eu.ngrok.io
+  #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
 
-#   #     - name: Load secret
-#   #       uses: bxb100/load-secrets-action@abbc860
-#   #       env:
-#   #         SECRET: op://acceptance-tests/hello-world/test-section/secret
+  #     - name: Load secret
+  #       uses: bxb100/load-secrets-action@abbc860
+  #       env:
+  #         SECRET: op://acceptance-tests/hello-world/test-section/secret
 
-#   #     - name: Print masked secret
-#   #       run: |
-#   #         echo "Secret: $SECRET"
-#   #       # Prints: Secret: ***
+  #     - name: Print masked secret
+  #       run: |
+  #         echo "Secret: $SECRET"
+  #       # Prints: Secret: ***
 
-#   test-with-output-secrets:
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, macos-latest]
-#         auth: [connect, service-account]
-#         exclude:
-#           - os: macos-latest
-#             auth: connect
-#     runs-on: ${{ matrix.os }}
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Launch 1Password Connect instance
-#         if: ${{ matrix.auth == 'connect' }}
-#         env:
-#           OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
-#         run: |
-#           echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-#           docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
-#       - name: Configure Service account
-#         if: ${{ matrix.auth == 'service-account' }}
-#         uses: ./configure
-#         with:
-#           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-#       - name: Configure 1Password Connect
-#         if: ${{ matrix.auth == 'connect' }}
-#         uses: ./configure # 1password/load-secrets-action/configure@<version>
-#         with:
-#           connect-host: http://localhost:8080
-#           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-#       - name: Load secrets
-#         id: load_secrets
-#         uses: ./ # 1password/load-secrets-action@<version>
-#         with:
-#           export-env: false
-#         env:
-#           SECRET: op://acceptance-tests/test-secret/password
-#           SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
-#           MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
-#       - name: Assert test secret values
-#         env:
-#           SECRET: ${{ steps.load_secrets.outputs.SECRET }}
-#           SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
-#           MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
-#         run: ./tests/assert-env-set.sh
-#   test-with-export-env:
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, macos-latest]
-#         auth: [connect, service-account]
-#         exclude:
-#           - os: macos-latest
-#             auth: connect
-#     runs-on: ${{ matrix.os }}
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Launch 1Password Connect instance
-#         if: ${{ matrix.auth == 'connect' }}
-#         env:
-#           OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
-#         run: |
-#           echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-#           docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
-#       - name: Configure Service account
-#         if: ${{ matrix.auth == 'service-account' }}
-#         uses: ./configure
-#         with:
-#           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-#       - name: Configure 1Password Connect
-#         if: ${{ matrix.auth == 'connect' }}
-#         uses: ./configure # 1password/load-secrets-action/configure@<version>
-#         with:
-#           connect-host: http://localhost:8080
-#           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-#       - name: Load secrets
-#         id: load_secrets
-#         uses: ./ # 1password/load-secrets-action@<version>
-#         env:
-#           SECRET: op://acceptance-tests/test-secret/password
-#           SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
-#           MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
-#       - name: Assert test secret values
-#         run: ./tests/assert-env-set.sh
-#       - name: Remove secrets
-#         uses: ./ # 1password/load-secrets-action@<version>
-#         with:
-#           unset-previous: true
-#       - name: Assert removed secrets
-#         run: ./tests/assert-env-unset.sh
-#   test-references-with-ids:
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, macos-latest]
-#         auth: [connect, service-account]
-#         exclude:
-#           - os: macos-latest
-#             auth: connect
-#     runs-on: ${{ matrix.os }}
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Launch 1Password Connect instance
-#         if: ${{ matrix.auth == 'connect' }}
-#         env:
-#           OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
-#         run: |
-#           echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-#           docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
-#       - name: Configure Service account
-#         if: ${{ matrix.auth == 'service-account' }}
-#         uses: ./configure
-#         with:
-#           service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-#       - name: Configure 1Password Connect
-#         if: ${{ matrix.auth == 'connect' }}
-#         uses: ./configure # 1password/load-secrets-action/configure@<version>
-#         with:
-#           connect-host: http://localhost:8080
-#           connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-#       - name: Load secrets
-#         id: load_secrets
-#         uses: ./ # 1password/load-secrets-action@<version>
-#         with:
-#           export-env: false
-#         env:
-#           SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
-#           SECRET_IN_SECTION: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
-#           MULTILINE_SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
-#       - name: Assert test secret values
-#         env:
-#           SECRET: ${{ steps.load_secrets.outputs.SECRET }}
-#           SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
-#           MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
-#         run: ./tests/assert-env-set.sh
+  test-with-output-secrets:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        auth: [connect, service-account]
+        exclude:
+          - os: macos-latest
+            auth: connect
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Launch 1Password Connect instance
+        if: ${{ matrix.auth == 'connect' }}
+        env:
+          OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
+        run: |
+          echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
+          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+      - name: Configure Service account
+        if: ${{ matrix.auth == 'service-account' }}
+        uses: ./configure
+        with:
+          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+      - name: Configure 1Password Connect
+        if: ${{ matrix.auth == 'connect' }}
+        uses: ./configure # 1password/load-secrets-action/configure@<version>
+        with:
+          connect-host: http://localhost:8080
+          connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+      - name: Load secrets
+        id: load_secrets
+        uses: ./ # 1password/load-secrets-action@<version>
+        with:
+          export-env: false
+        env:
+          SECRET: op://acceptance-tests/test-secret/password
+          SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
+          MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
+      - name: Assert test secret values
+        env:
+          SECRET: ${{ steps.load_secrets.outputs.SECRET }}
+          SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
+          MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
+        run: ./tests/assert-env-set.sh
+  test-with-export-env:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        auth: [connect, service-account]
+        exclude:
+          - os: macos-latest
+            auth: connect
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Launch 1Password Connect instance
+        if: ${{ matrix.auth == 'connect' }}
+        env:
+          OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
+        run: |
+          echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
+          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+      - name: Configure Service account
+        if: ${{ matrix.auth == 'service-account' }}
+        uses: ./configure
+        with:
+          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+      - name: Configure 1Password Connect
+        if: ${{ matrix.auth == 'connect' }}
+        uses: ./configure # 1password/load-secrets-action/configure@<version>
+        with:
+          connect-host: http://localhost:8080
+          connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+      - name: Load secrets
+        id: load_secrets
+        uses: ./ # 1password/load-secrets-action@<version>
+        env:
+          SECRET: op://acceptance-tests/test-secret/password
+          SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
+          MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
+      - name: Assert test secret values
+        run: ./tests/assert-env-set.sh
+      - name: Remove secrets
+        uses: ./ # 1password/load-secrets-action@<version>
+        with:
+          unset-previous: true
+      - name: Assert removed secrets
+        run: ./tests/assert-env-unset.sh
+  test-references-with-ids:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        auth: [connect, service-account]
+        exclude:
+          - os: macos-latest
+            auth: connect
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Launch 1Password Connect instance
+        if: ${{ matrix.auth == 'connect' }}
+        env:
+          OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
+        run: |
+          echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
+          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+      - name: Configure Service account
+        if: ${{ matrix.auth == 'service-account' }}
+        uses: ./configure
+        with:
+          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+      - name: Configure 1Password Connect
+        if: ${{ matrix.auth == 'connect' }}
+        uses: ./configure # 1password/load-secrets-action/configure@<version>
+        with:
+          connect-host: http://localhost:8080
+          connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+      - name: Load secrets
+        id: load_secrets
+        uses: ./ # 1password/load-secrets-action@<version>
+        with:
+          export-env: false
+        env:
+          SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
+          SECRET_IN_SECTION: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
+          MULTILINE_SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
+      - name: Assert test secret values
+        env:
+          SECRET: ${{ steps.load_secrets.outputs.SECRET }}
+          SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
+          MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
+        run: ./tests/assert-env-set.sh

@@ -17,194 +17,7 @@ jobs:
       - run: npm ci
       - run: npm test
 
-  test-with-output-secrets:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        auth: [connect, service-account]
-        exclude:
-          - os: macos-latest
-            auth: connect
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Base checkout
-        uses: actions/checkout@v4
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-      - name: Fork based /ok-to-test checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.pull_request.head.sha }}
-        if: |
-          github.event_name == 'repository_dispatch' &&
-          github.event.client_payload.slash_command.args.named.sha != '' &&
-          contains(
-            github.event.client_payload.pull_request.head.sha,
-            github.event.client_payload.slash_command.args.named.sha
-          )
-      - name: Launch 1Password Connect instance
-        if: ${{ matrix.auth == 'connect' }}
-        env:
-          OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
-        run: |
-          echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
-      - name: Configure Service account
-        if: ${{ matrix.auth == 'service-account' }}
-        uses: 1password/load-secrets-action/configure@v2
-        with:
-          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-      - name: Configure 1Password Connect
-        if: ${{ matrix.auth == 'connect' }}
-        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
-        with:
-          connect-host: http://localhost:8080
-          connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-      - name: Load secrets
-        id: load_secrets
-        uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
-        with:
-          export-env: false
-        env:
-          SECRET: op://acceptance-tests/test-secret/password
-          SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
-          MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
-      - name: Assert test secret values
-        env:
-          SECRET: ${{ steps.load_secrets.outputs.SECRET }}
-          SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
-          MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
-        run: ./tests/assert-env-set.sh
-  test-with-export-env:
-    # actions that are trusted by default must only be opened from within the repo, and skipped for forks because they'll fail there
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        auth: [connect, service-account]
-        exclude:
-          - os: macos-latest
-            auth: connect
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Base checkout
-        uses: actions/checkout@v4
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-      - name: Fork based /ok-to-test checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.pull_request.head.sha }}
-        if: |
-          github.event_name == 'repository_dispatch' &&
-          github.event.client_payload.slash_command.args.named.sha != '' &&
-          contains(
-            github.event.client_payload.pull_request.head.sha,
-            github.event.client_payload.slash_command.args.named.sha
-          )
-      - name: Launch 1Password Connect instance
-        if: ${{ matrix.auth == 'connect' }}
-        env:
-          OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
-        run: |
-          echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
-      - name: Configure Service account
-        if: ${{ matrix.auth == 'service-account' }}
-        uses: ./configure
-        with:
-          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-      - name: Configure 1Password Connect
-        if: ${{ matrix.auth == 'connect' }}
-        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
-        with:
-          connect-host: http://localhost:8080
-          connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-      - name: Load secrets
-        id: load_secrets
-        uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
-        env:
-          SECRET: op://acceptance-tests/test-secret/password
-          SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
-          MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
-      - name: Assert test secret values
-        run: ./tests/assert-env-set.sh
-      - name: Remove secrets
-        uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
-        with:
-          unset-previous: true
-      - name: Assert removed secrets
-        run: ./tests/assert-env-unset.sh
-  test-references-with-ids:
-    # actions that are trusted by default must only be opened from within the repo, and skipped for forks because they'll fail there
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        auth: [connect, service-account]
-        exclude:
-          - os: macos-latest
-            auth: connect
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Base checkout
-        uses: actions/checkout@v4
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-      - name: Fork based /ok-to-test checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.pull_request.head.sha }}
-        if: |
-          github.event_name == 'repository_dispatch' &&
-          github.event.client_payload.slash_command.args.named.sha != '' &&
-          contains(
-            github.event.client_payload.pull_request.head.sha,
-            github.event.client_payload.slash_command.args.named.sha
-          )
-      - name: Launch 1Password Connect instance
-        if: ${{ matrix.auth == 'connect' }}
-        env:
-          OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
-        run: |
-          echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
-          docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
-      - name: Configure Service account
-        if: ${{ matrix.auth == 'service-account' }}
-        uses: 1password/load-secrets-action/configure@v2
-        with:
-          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-      - name: Configure 1Password Connect
-        if: ${{ matrix.auth == 'connect' }}
-        uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
-        with:
-          connect-host: http://localhost:8080
-          connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
-      - name: Load secrets
-        id: load_secrets
-        uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
-        with:
-          export-env: false
-        env:
-          SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
-          SECRET_IN_SECTION: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
-          MULTILINE_SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
-      - name: Assert test secret values
-        env:
-          SECRET: ${{ steps.load_secrets.outputs.SECRET }}
-          SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
-          MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
-        run: ./tests/assert-env-set.sh
-
-  # test-with-output-secrets-fork:
-  #   # required permissions for updating the status of the pull request checks
-  #   permissions:
-  #     pull-requests: write
-  #     checks: write
-  #   if: |
-  #     github.event_name == 'repository_dispatch' &&
-  #     github.event.client_payload.slash_command.args.named.sha != '' &&
-  #     contains(
-  #       github.event.client_payload.pull_request.head.sha,
-  #       github.event.client_payload.slash_command.args.named.sha
-  #     )
+  # test-with-output-secrets:
   #   strategy:
   #     matrix:
   #       os: [ubuntu-latest, macos-latest]
@@ -214,11 +27,20 @@ jobs:
   #           auth: connect
   #   runs-on: ${{ matrix.os }}
   #   steps:
-  #     # Check out merge commit
+  #     - name: Base checkout
+  #       uses: actions/checkout@v4
+  #       if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
   #     - name: Fork based /ok-to-test checkout
   #       uses: actions/checkout@v4
   #       with:
   #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  #       if: |
+  #         github.event_name == 'repository_dispatch' &&
+  #         github.event.client_payload.slash_command.args.named.sha != '' &&
+  #         contains(
+  #           github.event.client_payload.pull_request.head.sha,
+  #           github.event.client_payload.slash_command.args.named.sha
+  #         )
   #     - name: Launch 1Password Connect instance
   #       if: ${{ matrix.auth == 'connect' }}
   #       env:
@@ -228,18 +50,18 @@ jobs:
   #         docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
   #     - name: Configure Service account
   #       if: ${{ matrix.auth == 'service-account' }}
-  #       uses: ./configure
+  #       uses: 1password/load-secrets-action/configure@v2
   #       with:
   #         service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
   #     - name: Configure 1Password Connect
   #       if: ${{ matrix.auth == 'connect' }}
-  #       uses: ./configure # 1password/load-secrets-action/configure@<version>
+  #       uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
   #       with:
   #         connect-host: http://localhost:8080
   #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
   #     - name: Load secrets
   #       id: load_secrets
-  #       uses: ./ # 1password/load-secrets-action@<version>
+  #       uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
   #       with:
   #         export-env: false
   #       env:
@@ -252,45 +74,9 @@ jobs:
   #         SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
   #         MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
   #       run: ./tests/assert-env-set.sh
-  #     # Update check run called "test-with-output-secrets-fork" on the forked PR
-  #     - uses: actions/github-script@v6
-  #       id: update-check-run
-  #       if: ${{ always() }}
-  #       env:
-  #         job: ${{ github.job }}
-  #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
-  #         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-  #         conclusion: ${{ job.status }} 
-  #       with:
-  #         github-token: ${{ secrets.GITHUB_TOKEN }}
-  #         script: |
-  #           const { data: checks } = await github.rest.checks.listForRef({
-  #             ...context.repo,
-  #             ref: process.env.ref
-  #           });
-
-  #           const check = checks.check_runs.filter(c => c.name === process.env.job);
-
-  #           const { data: result } = await github.rest.checks.update({
-  #             ...context.repo,
-  #             check_run_id: check[0].id,
-  #             status: 'completed',
-  #             conclusion: process.env.conclusion
-  #           });
-
-  #           return result;
-  # test-with-export-env-fork:
-  #   # required permissions for updating the status of the pull request checks
-  #   permissions:
-  #     pull-requests: write
-  #     checks: write
-  #   if: |
-  #     github.event_name == 'repository_dispatch' &&
-  #     github.event.client_payload.slash_command.args.named.sha != '' &&
-  #     contains(
-  #       github.event.client_payload.pull_request.head.sha,
-  #       github.event.client_payload.slash_command.args.named.sha
-  #     )
+  # test-with-export-env:
+  #   # actions that are trusted by default must only be opened from within the repo, and skipped for forks because they'll fail there
+  #   if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
   #   strategy:
   #     matrix:
   #       os: [ubuntu-latest, macos-latest]
@@ -300,11 +86,20 @@ jobs:
   #           auth: connect
   #   runs-on: ${{ matrix.os }}
   #   steps:
-  #     # Check out merge commit
+  #     - name: Base checkout
+  #       uses: actions/checkout@v4
+  #       if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
   #     - name: Fork based /ok-to-test checkout
   #       uses: actions/checkout@v4
   #       with:
   #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  #       if: |
+  #         github.event_name == 'repository_dispatch' &&
+  #         github.event.client_payload.slash_command.args.named.sha != '' &&
+  #         contains(
+  #           github.event.client_payload.pull_request.head.sha,
+  #           github.event.client_payload.slash_command.args.named.sha
+  #         )
   #     - name: Launch 1Password Connect instance
   #       if: ${{ matrix.auth == 'connect' }}
   #       env:
@@ -319,13 +114,13 @@ jobs:
   #         service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
   #     - name: Configure 1Password Connect
   #       if: ${{ matrix.auth == 'connect' }}
-  #       uses: ./configure # 1password/load-secrets-action/configure@<version>
+  #       uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
   #       with:
   #         connect-host: http://localhost:8080
   #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
   #     - name: Load secrets
   #       id: load_secrets
-  #       uses: ./ # 1password/load-secrets-action@<version>
+  #       uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
   #       env:
   #         SECRET: op://acceptance-tests/test-secret/password
   #         SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
@@ -333,50 +128,14 @@ jobs:
   #     - name: Assert test secret values
   #       run: ./tests/assert-env-set.sh
   #     - name: Remove secrets
-  #       uses: ./ # 1password/load-secrets-action@<version>
+  #       uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
   #       with:
   #         unset-previous: true
   #     - name: Assert removed secrets
   #       run: ./tests/assert-env-unset.sh
-  #     # Update check run called "test-with-export-env-fork" on the forked PR
-  #     - uses: actions/github-script@v6
-  #       id: update-check-run
-  #       if: ${{ always() }}
-  #       env:
-  #         job: ${{ github.job }}
-  #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
-  #         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-  #         conclusion: ${{ job.status }} 
-  #       with:
-  #         github-token: ${{ secrets.GITHUB_TOKEN }}
-  #         script: |
-  #           const { data: checks } = await github.rest.checks.listForRef({
-  #             ...context.repo,
-  #             ref: process.env.ref
-  #           });
-
-  #           const check = checks.check_runs.filter(c => c.name === process.env.job);
-
-  #           const { data: result } = await github.rest.checks.update({
-  #             ...context.repo,
-  #             check_run_id: check[0].id,
-  #             status: 'completed',
-  #             conclusion: process.env.conclusion
-  #           });
-
-  #           return result;
-  # test-references-with-ids-fork:
-  #   # required permissions for updating the status of the pull request checks
-  #   permissions:
-  #     pull-requests: write
-  #     checks: write
-  #   if: |
-  #     github.event_name == 'repository_dispatch' &&
-  #     github.event.client_payload.slash_command.args.named.sha != '' &&
-  #     contains(
-  #       github.event.client_payload.pull_request.head.sha,
-  #       github.event.client_payload.slash_command.args.named.sha
-  #     )
+  # test-references-with-ids:
+  #   # actions that are trusted by default must only be opened from within the repo, and skipped for forks because they'll fail there
+  #   if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
   #   strategy:
   #     matrix:
   #       os: [ubuntu-latest, macos-latest]
@@ -386,11 +145,20 @@ jobs:
   #           auth: connect
   #   runs-on: ${{ matrix.os }}
   #   steps:
-  #     # Check out merge commit
+  #     - name: Base checkout
+  #       uses: actions/checkout@v4
+  #       if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
   #     - name: Fork based /ok-to-test checkout
   #       uses: actions/checkout@v4
   #       with:
   #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  #       if: |
+  #         github.event_name == 'repository_dispatch' &&
+  #         github.event.client_payload.slash_command.args.named.sha != '' &&
+  #         contains(
+  #           github.event.client_payload.pull_request.head.sha,
+  #           github.event.client_payload.slash_command.args.named.sha
+  #         )
   #     - name: Launch 1Password Connect instance
   #       if: ${{ matrix.auth == 'connect' }}
   #       env:
@@ -400,54 +168,286 @@ jobs:
   #         docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
   #     - name: Configure Service account
   #       if: ${{ matrix.auth == 'service-account' }}
-  #       uses: ./configure
+  #       uses: 1password/load-secrets-action/configure@v2
   #       with:
   #         service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
   #     - name: Configure 1Password Connect
   #       if: ${{ matrix.auth == 'connect' }}
-  #       uses: ./configure # 1password/load-secrets-action/configure@<version>
+  #       uses: 1password/load-secrets-action/configure@v2 # 1password/load-secrets-action/configure@<version>
   #       with:
   #         connect-host: http://localhost:8080
   #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
   #     - name: Load secrets
   #       id: load_secrets
-  #       uses: ./ # 1password/load-secrets-action@<version>
+  #       uses: 1password/load-secrets-action@v2 # 1password/load-secrets-action@<version>
   #       with:
   #         export-env: false
   #       env:
-  #         SECRET: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
-  #         SECRET_IN_SECTION: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/Section_tco6nsqycj6jcbyx63h5isxcny/doxu3mhkozcznnk5vjrkpdqayy
-  #         MULTILINE_SECRET: op://v5pz6venw4roosmkzdq2nhpv6u/ghtz3jvcc6dqmzc53d3r3eskge/notesPlain
+  #         SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
+  #         SECRET_IN_SECTION: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
+  #         MULTILINE_SECRET: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
   #     - name: Assert test secret values
   #       env:
   #         SECRET: ${{ steps.load_secrets.outputs.SECRET }}
   #         SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
   #         MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
   #       run: ./tests/assert-env-set.sh
-  #     # Update check run called "test-references-with-ids-fork" on the forked PR
-  #     - uses: actions/github-script@v6
-  #       id: update-check-run
-  #       if: ${{ always() }}
-  #       env:
-  #         job: ${{ github.job }}
-  #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
-  #         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-  #         conclusion: ${{ job.status }} 
-  #       with:
-  #         github-token: ${{ secrets.GITHUB_TOKEN }}
-  #         script: |
-  #           const { data: checks } = await github.rest.checks.listForRef({
-  #             ...context.repo,
-  #             ref: process.env.ref
-  #           });
 
-  #           const check = checks.check_runs.filter(c => c.name === process.env.job);
+  # # test-with-output-secrets-fork:
+  # #   # required permissions for updating the status of the pull request checks
+  # #   permissions:
+  # #     pull-requests: write
+  # #     checks: write
+  # #   if: |
+  # #     github.event_name == 'repository_dispatch' &&
+  # #     github.event.client_payload.slash_command.args.named.sha != '' &&
+  # #     contains(
+  # #       github.event.client_payload.pull_request.head.sha,
+  # #       github.event.client_payload.slash_command.args.named.sha
+  # #     )
+  # #   strategy:
+  # #     matrix:
+  # #       os: [ubuntu-latest, macos-latest]
+  # #       auth: [connect, service-account]
+  # #       exclude:
+  # #         - os: macos-latest
+  # #           auth: connect
+  # #   runs-on: ${{ matrix.os }}
+  # #   steps:
+  # #     # Check out merge commit
+  # #     - name: Fork based /ok-to-test checkout
+  # #       uses: actions/checkout@v4
+  # #       with:
+  # #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  # #     - name: Launch 1Password Connect instance
+  # #       if: ${{ matrix.auth == 'connect' }}
+  # #       env:
+  # #         OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
+  # #       run: |
+  # #         echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
+  # #         docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+  # #     - name: Configure Service account
+  # #       if: ${{ matrix.auth == 'service-account' }}
+  # #       uses: ./configure
+  # #       with:
+  # #         service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+  # #     - name: Configure 1Password Connect
+  # #       if: ${{ matrix.auth == 'connect' }}
+  # #       uses: ./configure # 1password/load-secrets-action/configure@<version>
+  # #       with:
+  # #         connect-host: http://localhost:8080
+  # #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+  # #     - name: Load secrets
+  # #       id: load_secrets
+  # #       uses: ./ # 1password/load-secrets-action@<version>
+  # #       with:
+  # #         export-env: false
+  # #       env:
+  # #         SECRET: op://acceptance-tests/test-secret/password
+  # #         SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
+  # #         MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
+  # #     - name: Assert test secret values
+  # #       env:
+  # #         SECRET: ${{ steps.load_secrets.outputs.SECRET }}
+  # #         SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
+  # #         MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
+  # #       run: ./tests/assert-env-set.sh
+  # #     # Update check run called "test-with-output-secrets-fork" on the forked PR
+  # #     - uses: actions/github-script@v6
+  # #       id: update-check-run
+  # #       if: ${{ always() }}
+  # #       env:
+  # #         job: ${{ github.job }}
+  # #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  # #         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+  # #         conclusion: ${{ job.status }} 
+  # #       with:
+  # #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  # #         script: |
+  # #           const { data: checks } = await github.rest.checks.listForRef({
+  # #             ...context.repo,
+  # #             ref: process.env.ref
+  # #           });
 
-  #           const { data: result } = await github.rest.checks.update({
-  #             ...context.repo,
-  #             check_run_id: check[0].id,
-  #             status: 'completed',
-  #             conclusion: process.env.conclusion
-  #           });
+  # #           const check = checks.check_runs.filter(c => c.name === process.env.job);
 
-  #           return result;
+  # #           const { data: result } = await github.rest.checks.update({
+  # #             ...context.repo,
+  # #             check_run_id: check[0].id,
+  # #             status: 'completed',
+  # #             conclusion: process.env.conclusion
+  # #           });
+
+  # #           return result;
+  # # test-with-export-env-fork:
+  # #   # required permissions for updating the status of the pull request checks
+  # #   permissions:
+  # #     pull-requests: write
+  # #     checks: write
+  # #   if: |
+  # #     github.event_name == 'repository_dispatch' &&
+  # #     github.event.client_payload.slash_command.args.named.sha != '' &&
+  # #     contains(
+  # #       github.event.client_payload.pull_request.head.sha,
+  # #       github.event.client_payload.slash_command.args.named.sha
+  # #     )
+  # #   strategy:
+  # #     matrix:
+  # #       os: [ubuntu-latest, macos-latest]
+  # #       auth: [connect, service-account]
+  # #       exclude:
+  # #         - os: macos-latest
+  # #           auth: connect
+  # #   runs-on: ${{ matrix.os }}
+  # #   steps:
+  # #     # Check out merge commit
+  # #     - name: Fork based /ok-to-test checkout
+  # #       uses: actions/checkout@v4
+  # #       with:
+  # #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  # #     - name: Launch 1Password Connect instance
+  # #       if: ${{ matrix.auth == 'connect' }}
+  # #       env:
+  # #         OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
+  # #       run: |
+  # #         echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
+  # #         docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+  # #     - name: Configure Service account
+  # #       if: ${{ matrix.auth == 'service-account' }}
+  # #       uses: ./configure
+  # #       with:
+  # #         service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+  # #     - name: Configure 1Password Connect
+  # #       if: ${{ matrix.auth == 'connect' }}
+  # #       uses: ./configure # 1password/load-secrets-action/configure@<version>
+  # #       with:
+  # #         connect-host: http://localhost:8080
+  # #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+  # #     - name: Load secrets
+  # #       id: load_secrets
+  # #       uses: ./ # 1password/load-secrets-action@<version>
+  # #       env:
+  # #         SECRET: op://acceptance-tests/test-secret/password
+  # #         SECRET_IN_SECTION: op://acceptance-tests/test-secret/test-section/password
+  # #         MULTILINE_SECRET: op://acceptance-tests/multiline-secret/notesPlain
+  # #     - name: Assert test secret values
+  # #       run: ./tests/assert-env-set.sh
+  # #     - name: Remove secrets
+  # #       uses: ./ # 1password/load-secrets-action@<version>
+  # #       with:
+  # #         unset-previous: true
+  # #     - name: Assert removed secrets
+  # #       run: ./tests/assert-env-unset.sh
+  # #     # Update check run called "test-with-export-env-fork" on the forked PR
+  # #     - uses: actions/github-script@v6
+  # #       id: update-check-run
+  # #       if: ${{ always() }}
+  # #       env:
+  # #         job: ${{ github.job }}
+  # #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  # #         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+  # #         conclusion: ${{ job.status }} 
+  # #       with:
+  # #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  # #         script: |
+  # #           const { data: checks } = await github.rest.checks.listForRef({
+  # #             ...context.repo,
+  # #             ref: process.env.ref
+  # #           });
+
+  # #           const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+  # #           const { data: result } = await github.rest.checks.update({
+  # #             ...context.repo,
+  # #             check_run_id: check[0].id,
+  # #             status: 'completed',
+  # #             conclusion: process.env.conclusion
+  # #           });
+
+  # #           return result;
+  # # test-references-with-ids-fork:
+  # #   # required permissions for updating the status of the pull request checks
+  # #   permissions:
+  # #     pull-requests: write
+  # #     checks: write
+  # #   if: |
+  # #     github.event_name == 'repository_dispatch' &&
+  # #     github.event.client_payload.slash_command.args.named.sha != '' &&
+  # #     contains(
+  # #       github.event.client_payload.pull_request.head.sha,
+  # #       github.event.client_payload.slash_command.args.named.sha
+  # #     )
+  # #   strategy:
+  # #     matrix:
+  # #       os: [ubuntu-latest, macos-latest]
+  # #       auth: [connect, service-account]
+  # #       exclude:
+  # #         - os: macos-latest
+  # #           auth: connect
+  # #   runs-on: ${{ matrix.os }}
+  # #   steps:
+  # #     # Check out merge commit
+  # #     - name: Fork based /ok-to-test checkout
+  # #       uses: actions/checkout@v4
+  # #       with:
+  # #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  # #     - name: Launch 1Password Connect instance
+  # #       if: ${{ matrix.auth == 'connect' }}
+  # #       env:
+  # #         OP_CONNECT_CREDENTIALS: ${{ secrets.OP_CONNECT_CREDENTIALS }}
+  # #       run: |
+  # #         echo "$OP_CONNECT_CREDENTIALS" > 1password-credentials.json
+  # #         docker compose -f tests/fixtures/docker-compose.yml up -d && sleep 10
+  # #     - name: Configure Service account
+  # #       if: ${{ matrix.auth == 'service-account' }}
+  # #       uses: ./configure
+  # #       with:
+  # #         service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+  # #     - name: Configure 1Password Connect
+  # #       if: ${{ matrix.auth == 'connect' }}
+  # #       uses: ./configure # 1password/load-secrets-action/configure@<version>
+  # #       with:
+  # #         connect-host: http://localhost:8080
+  # #         connect-token: ${{ secrets.OP_CONNECT_TOKEN }}
+  # #     - name: Load secrets
+  # #       id: load_secrets
+  # #       uses: ./ # 1password/load-secrets-action@<version>
+  # #       with:
+  # #         export-env: false
+  # #       env:
+  # #         SECRET: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
+  # #         SECRET_IN_SECTION: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/Section_tco6nsqycj6jcbyx63h5isxcny/doxu3mhkozcznnk5vjrkpdqayy
+  # #         MULTILINE_SECRET: op://v5pz6venw4roosmkzdq2nhpv6u/ghtz3jvcc6dqmzc53d3r3eskge/notesPlain
+  # #     - name: Assert test secret values
+  # #       env:
+  # #         SECRET: ${{ steps.load_secrets.outputs.SECRET }}
+  # #         SECRET_IN_SECTION: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
+  # #         MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
+  # #       run: ./tests/assert-env-set.sh
+  # #     # Update check run called "test-references-with-ids-fork" on the forked PR
+  # #     - uses: actions/github-script@v6
+  # #       id: update-check-run
+  # #       if: ${{ always() }}
+  # #       env:
+  # #         job: ${{ github.job }}
+  # #         ref: ${{ github.event.client_payload.pull_request.head.sha }}
+  # #         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+  # #         conclusion: ${{ job.status }} 
+  # #       with:
+  # #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  # #         script: |
+  # #           const { data: checks } = await github.rest.checks.listForRef({
+  # #             ...context.repo,
+  # #             ref: process.env.ref
+  # #           });
+
+  # #           const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+  # #           const { data: result } = await github.rest.checks.update({
+  # #             ...context.repo,
+  # #             check_run_id: check[0].id,
+  # #             status: 'completed',
+  # #             conclusion: process.env.conclusion
+  # #           });
+
+  # #           return result;
