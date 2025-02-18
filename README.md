@@ -11,7 +11,7 @@
 
 ---
 
-HERE IS SOME STUFF
+HERE IS STUFF
 
 `load-secrets-action` loads secrets from 1Password into GitHub Actions using [Service Accounts](https://developer.1password.com/docs/service-accounts) or [1Password Connect](https://developer.1password.com/docs/connect).
 
