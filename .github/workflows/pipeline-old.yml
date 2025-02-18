@@ -1,7 +1,4 @@
-on:
-  pull_request:
-  push:
-    branches: ["main"]
+on: push
 name: Run acceptance tests - current action
 
 jobs:
