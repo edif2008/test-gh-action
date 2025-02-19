@@ -202,6 +202,7 @@ jobs:
               check_run_id: check[0].id,
               status: 'completed',
               conclusion: process.env.conclusion
+              details_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
 
             return result;
