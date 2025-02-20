@@ -281,7 +281,7 @@ jobs:
     strategy:
       matrix:
         job-name: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
-    needs: ${{ matrix.job-name }}
+    needs: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
     steps:
       - uses: actions/github-script@v6
         id: update-check-run
