@@ -299,7 +299,6 @@ jobs:
               check_run_id: check[0].id,
               status: 'completed',
               conclusion: process.env.conclusion
-              details_url: 
             });
 
             return result;
