@@ -296,7 +296,7 @@ jobs:
           job: ${{ matrix.job-name }}
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-          conclusion: ${{ format('needs.{0}.result', matrix.job-name) }} 
+          conclusion: ${{ format('needs.{0}', matrix.job-name).result }} 
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
