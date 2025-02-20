@@ -2,9 +2,8 @@ on:
   push:
     branches: [main]
   # pull_request:
-  pull_request_target:
-  repository_dispatch:
-    types: [ ok-to-test-command ]
+  # repository_dispatch:
+  #   types: [ ok-to-test-command ]
 name: Run acceptance tests
 
 jobs:
