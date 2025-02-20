@@ -293,7 +293,7 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         env:
-          job: ${{ format('needs.{0}', matrix.job-name) }}
+          job: ${{ matrix.job-name }}
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
           conclusion: ${{ format('needs.{0}.result', matrix.job-name) }} 
@@ -304,8 +304,6 @@ jobs:
               ...context.repo,
               ref: process.env.ref
             });
-
-            console.log(checks);
 
             const check = checks.check_runs.filter(c => c.name === process.env.job);
 
