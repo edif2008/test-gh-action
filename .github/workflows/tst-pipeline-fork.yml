@@ -305,6 +305,8 @@ jobs:
               ref: process.env.ref
             });
 
+            console.log(checks);
+
             const check = checks.check_runs.filter(c => c.name === process.env.job);
 
             const { data: result } = await github.rest.checks.update({
