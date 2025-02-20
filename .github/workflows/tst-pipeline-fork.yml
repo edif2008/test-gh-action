@@ -288,7 +288,6 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         id: update-check-run
-        if: ${{ always() }}
         env:
           job: ${{ format('needs.{0}', matrix.job-name) }}
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
