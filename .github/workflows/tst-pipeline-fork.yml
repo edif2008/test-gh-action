@@ -280,17 +280,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        job: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
-    needs: ${{ matrix.job }}
+        job-name: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
+    needs: ${{ matrix.job-name }}
     steps:
       - uses: actions/github-script@v6
         id: update-check-run
         if: ${{ always() }}
         env:
-          job: ${{ format('needs.{0}', matrix.job) }}
+          job: ${{ format('needs.{0}', matrix.job-name) }}
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-          conclusion: ${{ format('needs.{0}.result', matrix.job) }} 
+          conclusion: ${{ format('needs.{0}.result', matrix.job-name) }} 
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
