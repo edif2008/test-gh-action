@@ -293,7 +293,7 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         env:
-          job: ${{ fomrat('needs.{0}', matrix.job-name) }}
+          job: ${{ format('needs.{0}', matrix.job-name) }}
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
           conclusion: ${{ format('needs.{}.result', matrix.job-name) }} 
