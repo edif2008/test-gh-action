@@ -285,17 +285,18 @@ jobs:
       pull-requests: write
       checks: write
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     job-name: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        job-name: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
     needs: [test-with-output-secrets, test-references-with-ids, test-with-export-env]
     steps:
       - uses: actions/github-script@v6
         env:
-          job: ${{ needs.test-with-output-secrets }}
+          job: ${{ fomrat('needs.{0}', matrix.job-name) }}
           ref: ${{ github.event.client_payload.pull_request.head.sha }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-          conclusion: ${{ needs.test-with-output-secrets.result }} 
+          conclusion: ${{ format('needs.{}.result', matrix.job-name) }} 
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -314,51 +315,75 @@ jobs:
             });
 
             return result;
-      - uses: actions/github-script@v6
-        env:
-          job: ${{ needs.test-with-export-env.result }}
-          ref: ${{ github.event.client_payload.pull_request.head.sha }}
-          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-          conclusion: ${{ needs.test-with-export-env.result }} 
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: checks } = await github.rest.checks.listForRef({
-              ...context.repo,
-              ref: process.env.ref
-            });
+      # - uses: actions/github-script@v6
+      #   env:
+      #     job: ${{ needs.test-with-output-secrets }}
+      #     ref: ${{ github.event.client_payload.pull_request.head.sha }}
+      #     # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+      #     conclusion: ${{ needs.test-with-output-secrets.result }} 
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const { data: checks } = await github.rest.checks.listForRef({
+      #         ...context.repo,
+      #         ref: process.env.ref
+      #       });
 
-            const check = checks.check_runs.filter(c => c.name === process.env.job);
+      #       const check = checks.check_runs.filter(c => c.name === process.env.job);
 
-            const { data: result } = await github.rest.checks.update({
-              ...context.repo,
-              check_run_id: check[0].id,
-              status: 'completed',
-              conclusion: process.env.conclusion
-            });
+      #       const { data: result } = await github.rest.checks.update({
+      #         ...context.repo,
+      #         check_run_id: check[0].id,
+      #         status: 'completed',
+      #         conclusion: process.env.conclusion
+      #       });
 
-            return result;
-      - uses: actions/github-script@v6
-        env:
-          job: ${{ needs.test-references-with-ids.result }}
-          ref: ${{ github.event.client_payload.pull_request.head.sha }}
-          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-          conclusion: ${{ needs.test-references-with-ids.result }} 
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: checks } = await github.rest.checks.listForRef({
-              ...context.repo,
-              ref: process.env.ref
-            });
+      #       return result;
+      # - uses: actions/github-script@v6
+      #   env:
+      #     job: ${{ needs.test-with-export-env.result }}
+      #     ref: ${{ github.event.client_payload.pull_request.head.sha }}
+      #     # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+      #     conclusion: ${{ needs.test-with-export-env.result }} 
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const { data: checks } = await github.rest.checks.listForRef({
+      #         ...context.repo,
+      #         ref: process.env.ref
+      #       });
 
-            const check = checks.check_runs.filter(c => c.name === process.env.job);
+      #       const check = checks.check_runs.filter(c => c.name === process.env.job);
 
-            const { data: result } = await github.rest.checks.update({
-              ...context.repo,
-              check_run_id: check[0].id,
-              status: 'completed',
-              conclusion: process.env.conclusion
-            });
+      #       const { data: result } = await github.rest.checks.update({
+      #         ...context.repo,
+      #         check_run_id: check[0].id,
+      #         status: 'completed',
+      #         conclusion: process.env.conclusion
+      #       });
 
-            return result;
+      #       return result;
+      # - uses: actions/github-script@v6
+      #   env:
+      #     job: ${{ needs.test-references-with-ids.result }}
+      #     ref: ${{ github.event.client_payload.pull_request.head.sha }}
+      #     # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+      #     conclusion: ${{ needs.test-references-with-ids.result }} 
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const { data: checks } = await github.rest.checks.listForRef({
+      #         ...context.repo,
+      #         ref: process.env.ref
+      #       });
+
+      #       const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+      #       const { data: result } = await github.rest.checks.update({
+      #         ...context.repo,
+      #         check_run_id: check[0].id,
+      #         status: 'completed',
+      #         conclusion: process.env.conclusion
+      #       });
+
+      #       return result;
