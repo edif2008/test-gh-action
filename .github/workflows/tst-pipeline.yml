@@ -1,23 +1,24 @@
 on:
   push:
     branches: [main]
-  pull_request:
+  # pull_request:
+  pull_request_target:
   repository_dispatch:
     types: [ ok-to-test-command ]
 name: Run acceptance tests
 
 jobs:
   unit-tests:
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-      (
-        github.event_name == 'repository_dispatch' &&
-        github.event.client_payload.slash_command.args.named.sha != '' &&
-        contains(
-          github.event.client_payload.pull_request.head.sha,
-          github.event.client_payload.slash_command.args.named.sha
-        )
-      )
+    # if: |
+    #   (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+    #   (
+    #     github.event_name == 'repository_dispatch' &&
+    #     github.event.client_payload.slash_command.args.named.sha != '' &&
+    #     contains(
+    #       github.event.client_payload.pull_request.head.sha,
+    #       github.event.client_payload.slash_command.args.named.sha
+    #     )
+    #   )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,16 +29,16 @@ jobs:
       - run: npm test
 
   test-with-output-secrets:
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-      (
-        github.event_name == 'repository_dispatch' &&
-        github.event.client_payload.slash_command.args.named.sha != '' &&
-        contains(
-          github.event.client_payload.pull_request.head.sha,
-          github.event.client_payload.slash_command.args.named.sha
-        )
-      )
+    # if: |
+    #   (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+    #   (
+    #     github.event_name == 'repository_dispatch' &&
+    #     github.event.client_payload.slash_command.args.named.sha != '' &&
+    #     contains(
+    #       github.event.client_payload.pull_request.head.sha,
+    #       github.event.client_payload.slash_command.args.named.sha
+    #     )
+    #   )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -122,16 +123,16 @@ jobs:
 
             return result;
   test-with-export-env:
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-      (
-        github.event_name == 'repository_dispatch' &&
-        github.event.client_payload.slash_command.args.named.sha != '' &&
-        contains(
-          github.event.client_payload.pull_request.head.sha,
-          github.event.client_payload.slash_command.args.named.sha
-        )
-      )
+    # if: |
+    #   (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+    #   (
+    #     github.event_name == 'repository_dispatch' &&
+    #     github.event.client_payload.slash_command.args.named.sha != '' &&
+    #     contains(
+    #       github.event.client_payload.pull_request.head.sha,
+    #       github.event.client_payload.slash_command.args.named.sha
+    #     )
+    #   )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -217,16 +218,16 @@ jobs:
 
             return result;
   test-references-with-ids:
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-      (
-        github.event_name == 'repository_dispatch' &&
-        github.event.client_payload.slash_command.args.named.sha != '' &&
-        contains(
-          github.event.client_payload.pull_request.head.sha,
-          github.event.client_payload.slash_command.args.named.sha
-        )
-      )
+    # if: |
+    #   (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+    #   (
+    #     github.event_name == 'repository_dispatch' &&
+    #     github.event.client_payload.slash_command.args.named.sha != '' &&
+    #     contains(
+    #       github.event.client_payload.pull_request.head.sha,
+    #       github.event.client_payload.slash_command.args.named.sha
+    #     )
+    #   )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
