@@ -26,6 +26,7 @@ jobs:
 
   test-with-output-secrets:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]
@@ -70,6 +71,7 @@ jobs:
         run: ./tests/assert-env-set.sh
   test-with-export-env:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]
@@ -114,6 +116,7 @@ jobs:
         run: ./tests/assert-env-unset.sh
   test-references-with-ids:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]

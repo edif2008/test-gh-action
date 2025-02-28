@@ -42206,6 +42206,9 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(7484);
+;// CONCATENATED MODULE: external "node:process"
+const external_node_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:process");
+var external_node_process_default = /*#__PURE__*/__nccwpck_require__.n(external_node_process_namespaceObject);
 ;// CONCATENATED MODULE: ./src/constants.ts
 const envConnectHost = "OP_CONNECT_HOST";
 const envConnectToken = "OP_CONNECT_TOKEN";
@@ -42230,7 +42233,7 @@ class ServiceAccount {
         if (!this.client) {
             this.client = await (0,sdk.createClient)({
                 auth: this.token,
-                integrationName: "GitHub Action load-secrets-action",
+                integrationName: "1Password - Load Secrets GitHub Action",
                 integrationVersion: package_namespaceObject.rE,
             });
         }
@@ -42268,15 +42271,14 @@ class Connect {
     }
     /**
      * This is method derive from https://github.com/1Password/onepassword-operator/blob/ced45c33d4c1e0267dc5af54231c5a29accce4c4/pkg/onepassword/items.go
-     *
      * @param path Secret reference path, match `ref_regex`
      */
     async resolveByPath(path) {
-        const match = ref_regex.exec(path);
-        if (!match) {
+        const matched = parseSecretRef(path);
+        if (!matched) {
             throw new Error(`Invalid secret reference: ${path}`);
         }
-        const { vaultName, itemName, sectionName, fieldName } = match.groups;
+        const { vaultName, itemName, sectionName, fieldName } = matched;
         const vault = await this.op.getVault(vaultName);
         if (!vault.id) {
             return undefined;
@@ -42288,14 +42290,14 @@ class Connect {
             : fieldName;
         if (sectionName) {
             const section = item.sections?.filter((s) => s.label === sectionName || s.id === sectionName);
-            if (section === undefined || section.length == 0) {
+            if (section === undefined || section.length === 0) {
                 throw new Error(`The item does not have a field '${errFiledName}'`);
             }
             const sectionIds = section.map((s) => s.id);
             itemFields = itemFields?.filter((f) => f.section && sectionIds.includes(f.section.id));
         }
         const matchedFields = itemFields?.filter((f) => f.id === fieldName || f.label === fieldName);
-        if (matchedFields == undefined || matchedFields.length == 0) {
+        if (matchedFields === undefined || matchedFields.length === 0) {
             throw new Error(`The item does not have a field '${errFiledName}'`);
         }
         if (matchedFields.length > 1) {
@@ -42305,21 +42307,12 @@ class Connect {
     }
 }
 
-;// CONCATENATED MODULE: external "node:process"
-const external_node_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:process");
-var external_node_process_default = /*#__PURE__*/__nccwpck_require__.n(external_node_process_namespaceObject);
 ;// CONCATENATED MODULE: ./src/utils.ts
 
 
 
 
 
-/**
- * `op://<vault-name>/<item-name>/[section-name/]<field-name>`
- *
- * see more <https://developer.1password.com/docs/cli/secret-references/>
- */
-const ref_regex = /^op:\/\/(?<vaultName>[^/]+)\/(?<itemName>[^/]+)\/((?<sectionName>[^/]+)\/)?(?<fieldName>[^/]+)$/;
 const getAuth = () => {
     const isConnect = (external_node_process_default()).env[envConnectHost] && (external_node_process_default()).env[envConnectToken];
     const isServiceAccount = (external_node_process_default()).env[envServiceAccountToken];
@@ -42368,19 +42361,17 @@ const loadSecrets = async (auth, shouldExportEnv) => {
         core.exportVariable(envManagedVariables, refs.join());
     }
 };
-const loadSecretRefsFromEnv = () => {
-    return Object.entries((external_node_process_default()).env)
-        .filter(([, v]) => {
-        if (v && v.startsWith("op://")) {
-            if (v.match(ref_regex)) {
-                return true;
-            }
-            core.warning(`omitted '${v}' seems not a valid secret reference, please check https://developer.1password.com/docs/cli/secret-references`);
+const loadSecretRefsFromEnv = () => Object.entries((external_node_process_default()).env)
+    .filter(([, v]) => {
+    if (v && v.startsWith("op://")) {
+        if (parseSecretRef(v)) {
+            return true;
         }
-        return false;
-    })
-        .map(([k]) => k);
-};
+        core.warning(`omitted '${v}' seems not a valid secret reference, please check https://developer.1password.com/docs/cli/secret-references`);
+    }
+    return false;
+})
+    .map(([k]) => k);
 const unsetPrevious = () => {
     if ((external_node_process_default()).env[envManagedVariables]) {
         core.info("Unsetting previous values ...");
@@ -42390,6 +42381,21 @@ const unsetPrevious = () => {
             core.exportVariable(envName, "");
         }
     }
+};
+/**
+ * `op://<vault-name>/<item-name>/[section-name/]<field-name>`
+ *
+ * see more <https://developer.1password.com/docs/cli/secret-references/>
+ *
+ * each part only support alphanumeric, space, _, . or - characters
+ */
+const ref_regex = /^op:\/\/(?<vaultName>[a-zA-Z0-9_.\- ]+)\/(?<itemName>[a-zA-Z0-9_.\- ]+)\/((?<sectionName>[a-zA-Z0-9_.\- ]+)\/)?(?<fieldName>[a-zA-Z0-9_.\- ]+)$/;
+const parseSecretRef = (ref) => {
+    const match = ref.match(ref_regex);
+    if (match) {
+        return match.groups;
+    }
+    return null;
 };
 
 ;// CONCATENATED MODULE: ./src/main.ts
