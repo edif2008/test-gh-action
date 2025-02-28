@@ -1,12 +1,12 @@
-import type { SecretReference, SecretReferenceResolver } from "./types";
 import { OnePasswordConnect } from "@1password/connect";
 import { OPConnect } from "@1password/connect/dist/lib/op-connect";
-import { ref_regex } from "../utils";
+import { parseSecretRef } from "../utils";
+import type { SecretReferenceResolver } from "./types";
 
 export class Connect implements SecretReferenceResolver {
-	op: OPConnect;
+	private op: OPConnect;
 
-	constructor(serverURL: string, token: string) {
+	public constructor(serverURL: string, token: string) {
 		this.op = OnePasswordConnect({
 			serverURL,
 			token,
@@ -14,7 +14,7 @@ export class Connect implements SecretReferenceResolver {
 		});
 	}
 
-	async resolve(ref: string): Promise<string> {
+	public async resolve(ref: string): Promise<string> {
 		const secret = await this.resolveByPath(ref);
 		if (!secret) {
 			throw new Error(`Can't resolve this ${ref}`);
@@ -24,16 +24,14 @@ export class Connect implements SecretReferenceResolver {
 
 	/**
 	 * This is method derive from https://github.com/1Password/onepassword-operator/blob/ced45c33d4c1e0267dc5af54231c5a29accce4c4/pkg/onepassword/items.go
-	 *
 	 * @param path Secret reference path, match `ref_regex`
 	 */
 	private async resolveByPath(path: string): Promise<string | undefined> {
-		const match = ref_regex.exec(path);
-		if (!match) {
+		const matched = parseSecretRef(path);
+		if (!matched) {
 			throw new Error(`Invalid secret reference: ${path}`);
 		}
-		const { vaultName, itemName, sectionName, fieldName } =
-			match.groups as SecretReference;
+		const { vaultName, itemName, sectionName, fieldName } = matched;
 
 		const vault = await this.op.getVault(vaultName);
 		if (!vault.id) {
@@ -49,7 +47,7 @@ export class Connect implements SecretReferenceResolver {
 			const section = item.sections?.filter(
 				(s) => s.label === sectionName || s.id === sectionName,
 			);
-			if (section === undefined || section.length == 0) {
+			if (section === undefined || section.length === 0) {
 				throw new Error(`The item does not have a field '${errFiledName}'`);
 			}
 			const sectionIds = section.map((s) => s.id!);
@@ -62,7 +60,7 @@ export class Connect implements SecretReferenceResolver {
 			(f) => f.id === fieldName || f.label === fieldName,
 		);
 
-		if (matchedFields == undefined || matchedFields.length == 0) {
+		if (matchedFields === undefined || matchedFields.length === 0) {
 			throw new Error(`The item does not have a field '${errFiledName}'`);
 		}
 		if (matchedFields.length > 1) {

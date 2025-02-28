@@ -1,9 +1,7 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "commonCheck"] }] */
-
 import * as core from "@actions/core";
-import * as main from "../src/main";
 import * as op from "@1password/sdk";
 import * as connect from "@1password/connect";
+import * as main from "../src/main";
 
 const runMock = jest.spyOn(main, "run");
 
@@ -103,15 +101,13 @@ describe("test main action", () => {
 		});
 
 		jest.spyOn(connect, "OnePasswordConnect").mockImplementation(
-			jest.fn().mockImplementation(() => {
-				return {
-					getVault: jest.fn().mockResolvedValue({ id: "dev" }),
-					getItem: jest.fn().mockResolvedValue({
-						id: "test",
-						fields: [{ id: "test-key", value: "test-secret" }],
-					}),
-				};
-			}),
+			jest.fn().mockImplementation(() => ({
+				getVault: jest.fn().mockResolvedValue({ id: "dev" }),
+				getItem: jest.fn().mockResolvedValue({
+					id: "test",
+					fields: [{ id: "test-key", value: "test-secret" }],
+				}),
+			})),
 		);
 
 		await main.run();
