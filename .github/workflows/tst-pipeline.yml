@@ -40,9 +40,9 @@ jobs:
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
     secrets: inherit
     with:
-      secret: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
-      secret-in-section: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/Section_tco6nsqycj6jcbyx63h5isxcny/doxu3mhkozcznnk5vjrkpdqayy
-      multiline-secret: op://v5pz6venw4roosmkzdq2nhpv6u/ghtz3jvcc6dqmzc53d3r3eskge/notesPlain
+      secret: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
+      secret-in-section: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
+      multiline-secret: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
       export-env: false
 
   # test-with-output-secrets-fork:
