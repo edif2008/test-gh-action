@@ -19,6 +19,7 @@ on:
 jobs:
   acceptance-test:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         auth: [connect, service-account]
