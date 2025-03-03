@@ -61,19 +61,11 @@ jobs:
         github.event.client_payload.pull_request.head.sha,
         github.event.client_payload.slash_command.args.named.sha
       )
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        auth: [connect, service-account]
-        exclude:
-          - os: macos-latest
-            auth: connect
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
     with:
-      secret: ${{ steps.load_secrets.outputs.SECRET }}
-      secret-in-section: ${{ steps.load_secrets.outputs.SECRET_IN_SECTION }}
-      multiline-secret: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
+      secret: op://acceptance-tests/test-secret/password
+      secret-in-section: op://acceptance-tests/test-secret/test-section/password
+      multiline-secret: op://acceptance-tests/multiline-secret/notesPlain
       export-env: false
   test-with-export-env:
     # required permissions for updating the status of the pull request checks
