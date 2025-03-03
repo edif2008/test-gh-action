@@ -62,6 +62,7 @@ jobs:
         github.event.client_payload.slash_command.args.named.sha
       )
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
+    secrets: inherit
     with:
       secret: op://acceptance-tests/test-secret/password
       secret-in-section: op://acceptance-tests/test-secret/test-section/password
@@ -76,6 +77,7 @@ jobs:
         github.event.client_payload.slash_command.args.named.sha
       )
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
+    secrets: inherit
     with:
       secret: op://acceptance-tests/test-secret/password
       secret-in-section: op://acceptance-tests/test-secret/test-section/password
@@ -90,6 +92,7 @@ jobs:
         github.event.client_payload.slash_command.args.named.sha
       )
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
+    secrets: inherit
     with:
       secret: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
       secret-in-section: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/Section_tco6nsqycj6jcbyx63h5isxcny/doxu3mhkozcznnk5vjrkpdqayy

@@ -20,6 +20,7 @@ jobs:
   test-with-output-secrets:
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
+    secrets: inherit
     with:
       secret: op://acceptance-tests/test-secret/password
       secret-in-section: op://acceptance-tests/test-secret/test-section/password
@@ -28,6 +29,7 @@ jobs:
   test-with-export-env:
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
+    secrets: inherit
     with:
       secret: op://acceptance-tests/test-secret/password
       secret-in-section: op://acceptance-tests/test-secret/test-section/password
@@ -36,6 +38,7 @@ jobs:
   test-references-with-ids:
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
+    secrets: inherit
     with:
       secret: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
       secret-in-section: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/Section_tco6nsqycj6jcbyx63h5isxcny/doxu3mhkozcznnk5vjrkpdqayy
