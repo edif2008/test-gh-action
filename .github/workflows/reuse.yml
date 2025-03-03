@@ -15,6 +15,9 @@ on:
       export-env:
         required: true
         type: boolean
+      sha:
+        required: false
+        type: string
 
 jobs:
   acceptance-test:
@@ -27,7 +30,14 @@ jobs:
             auth: connect
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Base checkout
+        uses: actions/checkout@v4
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+      - name: Fork based /ok-to-test checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+        if: ${{ inputs.sha }} != ""
       - name: Launch 1Password Connect instance
         if: ${{ matrix.auth == 'connect' }}
         env:
