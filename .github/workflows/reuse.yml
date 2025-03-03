@@ -76,15 +76,15 @@ jobs:
           MULTILINE_SECRET: ${{ steps.load_secrets.outputs.MULTILINE_SECRET }}
         run: ./tests/assert-env-set.sh
       - name: Assert test secret values
-        if: ${{ inputs.export-env }} == true
+        if: ${{ inputs.export-env == "false" }}
         run: ./tests/assert-env-set.sh
       - name: Remove secrets
-        if: ${{ inputs.export-env }} == true
+        if: ${{ inputs.export-env == "true" }}
         uses: ./ # 1password/load-secrets-action@<version>
         with:
           unset-previous: true
       - name: Assert removed secrets
-        if: ${{ inputs.export-env }} == true
+        if: ${{ inputs.export-env == "true" }}
         run: ./tests/assert-env-unset.sh
   # test-with-export-env:
   #   strategy:
