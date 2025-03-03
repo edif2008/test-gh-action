@@ -18,7 +18,7 @@ jobs:
       - run: npm test
 
   test-with-output-secrets:
-    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
     with:
       secret: op://acceptance-tests/test-secret/password
@@ -26,7 +26,7 @@ jobs:
       multiline-secret: op://acceptance-tests/multiline-secret/notesPlain
       export-env: false
   test-with-export-env:
-    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
     with:
       secret: op://acceptance-tests/test-secret/password
@@ -34,7 +34,7 @@ jobs:
       multiline-secret: op://acceptance-tests/multiline-secret/notesPlain
       export-env: true
   test-references-with-ids:
-    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
     with:
       secret: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
