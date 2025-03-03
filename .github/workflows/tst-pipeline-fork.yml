@@ -4,55 +4,6 @@ on:
 name: Run acceptance tests [fork]
 
 jobs:
-  unit-tests:
-    # required permissions for updating the status of the pull request checks
-    permissions:
-      pull-requests: write
-      checks: write
-    if: |
-      github.event_name == 'repository_dispatch' &&
-      github.event.client_payload.slash_command.args.named.sha != '' &&
-      contains(
-        github.event.client_payload.pull_request.head.sha,
-        github.event.client_payload.slash_command.args.named.sha
-      )
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.pull_request.head.sha }}
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm test
-      # - uses: actions/github-script@v6
-      #   id: update-check-run
-      #   if: ${{ always() }}
-      #   env:
-      #     job: ${{ github.job }}
-      #     ref: ${{ github.event.client_payload.pull_request.head.sha }}
-      #     # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-      #     conclusion: ${{ job.status }} 
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const { data: checks } = await github.rest.checks.listForRef({
-      #         ...context.repo,
-      #         ref: process.env.ref
-      #       });
-
-      #       const check = checks.check_runs.filter(c => c.name === process.env.job);
-
-      #       const { data: result } = await github.rest.checks.update({
-      #         ...context.repo,
-      #         check_run_id: check[0].id,
-      #         status: 'completed',
-      #         conclusion: process.env.conclusion
-      #       });
-
-      #       return result;
-
   test-with-output-secrets:
     if: |
       github.event_name == 'repository_dispatch' &&
@@ -94,9 +45,9 @@ jobs:
     uses: edif2008/test-gh-action/.github/workflows/reuse.yml@main
     secrets: inherit
     with:
-      secret: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/password
-      secret-in-section: op://v5pz6venw4roosmkzdq2nhpv6u/hrgkzhrlvscomepxlgafb2m3ca/Section_tco6nsqycj6jcbyx63h5isxcny/doxu3mhkozcznnk5vjrkpdqayy
-      multiline-secret: op://v5pz6venw4roosmkzdq2nhpv6u/ghtz3jvcc6dqmzc53d3r3eskge/notesPlain
+      secret: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/password
+      secret-in-section: op://ar3v2gmnw73p4bhkphr7t6rv44/buujcg6tsnf7yesmrjxdiwq4bq/Section_eq2lfsibpwk5bnorxvvjgmqily/wv6wvz2cpwn7grtb43durk7yxy
+      multiline-secret: op://ar3v2gmnw73p4bhkphr7t6rv44/x3tei6c67qbhifrnrrxvq7ox2u/notesPlain
       export-env: false
   update-checks:
     # required permissions for updating the status of the pull request checks
