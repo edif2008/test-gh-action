@@ -30,12 +30,12 @@ jobs:
       - name: Base checkout
         uses: actions/checkout@v4
         if: |
-          github.event_name == 'repository_dispatch' &&
+          github.event_name != 'repository_dispatch' &&
           (
             github.ref == 'refs/heads/main' || 
             (
               github.event_name == 'pull_request' && 
-              github.event.pull_request.head.repo.full_name == github.repository &&
+              github.event.pull_request.head.repo.full_name == github.repository
             )
           )
       - name: Fork based /ok-to-test checkout
