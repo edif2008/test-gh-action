@@ -20799,6 +20799,14 @@ const { isUint8Array, isArrayBuffer } = __nccwpck_require__(8253)
 const { File: UndiciFile } = __nccwpck_require__(3041)
 const { parseMIMEType, serializeAMimeType } = __nccwpck_require__(4322)
 
+let random
+try {
+  const crypto = __nccwpck_require__(7598)
+  random = (max) => crypto.randomInt(0, max)
+} catch {
+  random = (max) => Math.floor(Math.random(max))
+}
+
 let ReadableStream = globalThis.ReadableStream
 
 /** @type {globalThis['File']} */
@@ -20884,7 +20892,7 @@ function extractBody (object, keepalive = false) {
     // Set source to a copy of the bytes held by object.
     source = new Uint8Array(object.buffer.slice(object.byteOffset, object.byteOffset + object.byteLength))
   } else if (util.isFormDataLike(object)) {
-    const boundary = `----formdata-undici-0${`${Math.floor(Math.random() * 1e11)}`.padStart(11, '0')}`
+    const boundary = `----formdata-undici-0${`${random(1e11)}`.padStart(11, '0')}`
     const prefix = `--${boundary}\r\nContent-Disposition: form-data`
 
     /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
@@ -35611,6 +35619,13 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("net");
 
 /***/ }),
 
+/***/ 7598:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:crypto");
+
+/***/ }),
+
 /***/ 8474:
 /***/ ((module) => {
 
@@ -42293,14 +42308,24 @@ class Connect {
             if (section === undefined || section.length === 0) {
                 throw new Error(`The item does not have a field '${errFiledName}'`);
             }
-            const sectionIds = section.map((s) => s.id);
-            itemFields = itemFields?.filter((f) => f.section && sectionIds.includes(f.section.id));
+            if (section.length > 1) {
+                throw new Error("More than one section matched the secret reference");
+            }
+            const sectionId = section[0].id;
+            itemFields = itemFields?.filter((f) => f.section?.id === sectionId);
         }
         const matchedFields = itemFields?.filter((f) => f.id === fieldName || f.label === fieldName);
         if (matchedFields === undefined || matchedFields.length === 0) {
             throw new Error(`The item does not have a field '${errFiledName}'`);
         }
         if (matchedFields.length > 1) {
+            // if section not provide, return the default section id equals to "add more" filed
+            if (!sectionName) {
+                const res = matchedFields.find((f) => f.section?.id === "add more")?.value;
+                if (res) {
+                    return res;
+                }
+            }
             throw new Error(`The item has more than one '${errFiledName}' field`);
         }
         return matchedFields[0].value;
